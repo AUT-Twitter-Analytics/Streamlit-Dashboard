@@ -36,12 +36,22 @@ class Twitter:
         return df
     
 
+    def get_user_tweet(self, username, count):
+        fetched_tweets = tweepy.Cursor(self.api.user_timeline, screen_name=username, exclude_replies=True, tweet_mode='extended').items(count)
+        users_tweets = list()
+        for tweet in fetched_tweets:
+            users_tweets.append([tweet.user.screen_name, tweet.full_text])
+        df = pd.DataFrame(data=users_tweets, columns=["user", "text"])
+        return df
+
+
     def df_to_csv(self, df):
         df.to_csv("tweets.csv", encoding="utf-8")
 
 
 
-api = Twitter()
-api.connect_to_twitter_OAuth()
-data = api.get_recent_tweet(query="دیجی کالا", language="fa", count=100)
-api.df_to_csv(data)
+twitter = Twitter()
+twitter.connect_to_twitter_OAuth()
+# data = twitter.get_recent_tweet(query="دیجی کالا", language="fa", count=100)
+user_data = twitter.get_user_tweet(username='mh___mp98', count=50)
+twitter.df_to_csv(user_data)
