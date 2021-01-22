@@ -26,22 +26,22 @@ class Twitter:
         return self.api
 
 
-    def get_recent_tweet(self, query, language, count):
+    def get_recent_tweet(self, query, language, count=100):
         query = query + " -filter:retweets"
         fetched_tweets = tweepy.Cursor(self.api.search, q=query, lang=language, tweet_mode='extended', result_type='recent').items(count)
         users_tweets = list()
         for tweet in fetched_tweets:
-            users_tweets.append([tweet.user.screen_name, tweet.full_text])
-        df = pd.DataFrame(data=users_tweets, columns=["user", "text"])
+            users_tweets.append([tweet.user.screen_name, tweet.full_text, tweet.created_at, tweet.lang])
+        df = pd.DataFrame(data=users_tweets, columns=["user", "text", "created_at", "lang"])
         return df
     
 
-    def get_user_tweet(self, username, count):
+    def get_user_tweet(self, username, count=100):
         fetched_tweets = tweepy.Cursor(self.api.user_timeline, screen_name=username, exclude_replies=True, tweet_mode='extended').items(count)
         users_tweets = list()
         for tweet in fetched_tweets:
-            users_tweets.append([tweet.user.screen_name, tweet.full_text])
-        df = pd.DataFrame(data=users_tweets, columns=["user", "text"])
+            users_tweets.append([tweet.user.screen_name, tweet.full_text, tweet.created_at, tweet.lang])
+        df = pd.DataFrame(data=users_tweets, columns=["user", "text", "created_at", "lang"])
         return df
 
 
@@ -49,9 +49,9 @@ class Twitter:
         df.to_csv("tweets.csv", encoding="utf-8")
 
 
-
-twitter = Twitter()
-twitter.connect_to_twitter_OAuth()
-# data = twitter.get_recent_tweet(query="دیجی کالا", language="fa", count=100)
-user_data = twitter.get_user_tweet(username='mh___mp98', count=50)
-twitter.df_to_csv(user_data)
+if __name__ == '__main__':
+    twitter = Twitter()
+    twitter.connect_to_twitter_OAuth()
+    data = twitter.get_recent_tweet(query="خامنه ای", language="fa", count=200)
+    # user_data = twitter.get_user_tweet(username='mh___mp98', count=50)
+    twitter.df_to_csv(data)
