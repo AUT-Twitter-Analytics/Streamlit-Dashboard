@@ -1,23 +1,32 @@
-import pandas as pd
-import streamlit as st
-import plotly.express as px
+import re
+
+import hazm
 import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+from streamlit import caching
+from wordcloud import STOPWORDS
+from wordcloud_fa import WordCloudFa
 
 from twitter import Twitter
 
 st.title("AUT Twitter Dashboard")
 st.sidebar.title("AUT Twitter Dashboard")
-
-st.markdown("This application is a dashboard used to analyze tweets 🐦")
 st.sidebar.markdown("This application is a dashboard used to analyze tweets 🐦")
 
-st.sidebar.subheader("Search Business")
+# Search Section in Sidebar
+st.sidebar.subheader("Search")
 tweet_type = st.sidebar.radio('Search By', ('keywords', 'username'))
 tweet_lang = st.sidebar.radio('Tweets Language', ('FA', 'EN'))
-user_input = st.sidebar.text_input(f'Enter {tweet_type} please:', key=1)
+user_input = st.sidebar.text_input(f'Enter {tweet_type} and press ENTER to apply', key=1)
+
+# Menu Section in Sidebar
+st.sidebar.subheader("Menu")
+analyze_type = st.sidebar.radio('Extracting Information By',('Exploratory Data Analysis', 'Sentiment Analysis', 'Topic Detection', 'Named Entity Recognition'))
 
 # Load Data
-@st.cache(persist=True)
+@st.cache(allow_output_mutation=True)
 def load_data():
     twitter = Twitter()
     twitter.connect_to_twitter_OAuth()
@@ -28,10 +37,34 @@ def load_data():
 
     return data
 
-if user_input:
+if user_input != '':
     data = load_data()
-    st.write(data)
 
+    # Exploratory Data Analysis
+    if analyze_type == 'Exploratory Data Analysis':
+        st.markdown('## Exploratory Data Analysis:')
+        st.markdown('## Fetched Data')
+        st.write(data)
 
-st.sidebar.subheader("Menu")
-analyze_type = st.sidebar.radio('',('Exploratory data analysis', 'Sentiment Analysis', 'Topic Detection', 'Named Entity Recognition'))
+        # Random Tweet
+        st.markdown('## Random Tweet')
+        random_tweet = st.button('Show another random tweet')
+        st.markdown(f'{data[["text"]].sample(n=1).iat[0, 0]}')
+
+        # WordCloud
+        st.markdown('## Wordcloud')
+        words = ' '.join(data['text'])
+        words = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))', '', words, flags=re.MULTILINE)
+        words = re.sub(r"@(\w+)", ' ', words, flags=re.MULTILINE)
+
+        if tweet_lang == 'FA':
+            pn = True
+            stopwords = hazm.stopwords_list()
+        elif tweet_lang == 'EN':
+            pn = False
+            stopwords = STOPWORDS
+        wordcloud = WordCloudFa(persian_normalize=pn, stopwords=stopwords, include_numbers=False, background_color='white', width=700, height=500)
+        frequencies = wordcloud.process_text(words)
+        wc = wordcloud.generate_from_frequencies(frequencies)
+        image = wc.to_image()
+        st.image(image)
