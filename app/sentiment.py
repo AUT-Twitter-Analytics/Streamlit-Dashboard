@@ -28,7 +28,7 @@ def sentiment_run(data, lang):
     prediction = loaded_rf_model.predict(X_vector)
 
     # add prediction to data
-    y = pd.DataFrame(prediction, columns=["prediction"])
+    y = pd.DataFrame(prediction, columns=["sentiment"])
     data = pd.concat([data, y], axis=1, join="inner")
 
     return data
