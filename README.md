@@ -2,10 +2,6 @@
 
 This application is a dashboard used to analyze tweets. 🐦
 
-## Overview
-
-...
-
 ## Setup and Run
 
 1. Clone the repo by `$ https://github.com/AUT-Twitter-Dashboard/Streamlit-Dashboard.git`
@@ -16,7 +12,7 @@ This application is a dashboard used to analyze tweets. 🐦
 
 4. Install the requirements using `$ pip3 install -r requirements.txt`
 
-5. Run project using `$ streamlit run app.py`
+5. Run project using `$ streamlit run app/app.py`
 
 6. You can now view your Streamlit app in your browser.
 
