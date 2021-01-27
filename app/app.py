@@ -15,7 +15,6 @@ from sentiment import sentiment_run
 from topic import topic_run
 from twitter import Twitter
 
-st.title("AUT Twitter Dashboard")
 st.sidebar.title("AUT Twitter Dashboard")
 st.sidebar.markdown("This application is a dashboard used to analyze tweets 🐦")
 
@@ -46,7 +45,7 @@ if user_input != '':
 
     # Exploratory Data Analysis
     if analyze_type == 'Exploratory Data Analysis':
-        st.markdown('## Exploratory Data Analysis:')
+        st.title("AUT Twitter Dashboard")
         # Dataframe
         st.markdown('## **Data**')
         st.write(data)
@@ -81,7 +80,7 @@ if user_input != '':
             
     # Sentiment Analysis
     if analyze_type == 'Sentiment Analysis':
-        st.markdown('## Sentiment Analysis:')
+        st.title('Sentiment Analysis')
         if tweet_lang == 'FA':
             sentiment_data = sentiment_run(data, 'fa')
         elif tweet_lang == 'EN':
@@ -89,14 +88,17 @@ if user_input != '':
         
         sentiment_count = sentiment_data['sentiment'].value_counts()
         sentiment_count = pd.DataFrame({'Sentiment':sentiment_count.index, 'Tweets':sentiment_count.values})
-
-        fig = px.pie(sentiment_count, values='Tweets', names='Sentiment')
-        st.plotly_chart(fig)
-
-        fig = px.bar(sentiment_count, x='Sentiment', y='Tweets', color='Tweets', height=500)
-        st.plotly_chart(fig)
-
-        st.markdown('## Data')
+        
+        st.markdown('## **Number of tweets by sentiment**')
+        select = st.selectbox('Visualization type', ['Pie chart','Bar plot',], key='1')
+        if select == 'Pie chart':
+            fig = px.pie(sentiment_count, values='Tweets', names='Sentiment')
+            st.plotly_chart(fig)
+        else:
+            fig = px.bar(sentiment_count, x='Sentiment', y='Tweets', color='Tweets', height=500)
+            st.plotly_chart(fig)
+        
+        st.markdown('## **Data**')
         st.write(sentiment_data)
         
         col1, col2 = st.beta_columns(2)
@@ -113,7 +115,7 @@ if user_input != '':
 
     # Topic Detection
     if analyze_type == 'Topic Detection':
-        st.markdown('## Topic Detection:')
+        st.title('Topic Detection:')
         if tweet_lang == 'FA':
             topic_data = topic_run(data, 'fa')
         elif tweet_lang == 'EN':
@@ -122,11 +124,14 @@ if user_input != '':
         topic_count = topic_data['topic'].value_counts()
         topic_count = pd.DataFrame({'Topic':topic_count.index, 'Tweets':topic_count.values})
 
-        fig = px.pie(topic_count, values='Tweets', names='Topic')
-        st.plotly_chart(fig)
-
-        fig = px.bar(topic_count, x='Topic', y='Tweets', color='Tweets', height=500)
-        st.plotly_chart(fig)
+        st.markdown('## **Number of tweets by topic**')
+        select = st.selectbox('Visualization type', ['Pie chart','Bar plot',], key='2')
+        if select == 'Pie chart':        
+            fig = px.pie(topic_count, values='Tweets', names='Topic')
+            st.plotly_chart(fig)
+        else:
+            fig = px.bar(topic_count, x='Topic', y='Tweets', color='Tweets', height=500)
+            st.plotly_chart(fig)
 
         st.markdown('## **Data**')
         st.write(topic_data)
