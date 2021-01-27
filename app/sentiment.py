@@ -18,12 +18,12 @@ def sentiment_run(data, lang):
     X = clean_data.text.apply(lambda x: np.str_(x))
 
     # vectorize data
-    address = "./vectorizer/sentiment/tfidf_" + lang + ".sav"
+    address = "app/vectorizer/sentiment/tfidf_" + lang + ".sav"
     loaded_vectorizer = pickle.load(open(address, "rb"))
     X_vector = loaded_vectorizer.transform(X)
 
     # rf model
-    address = "./models/sentiment/random_forest/rf_" + lang + ".sav"
+    address = "app/models/sentiment/random_forest/rf_" + lang + ".sav"
     loaded_rf_model = pickle.load(open(address, "rb"))
     prediction = loaded_rf_model.predict(X_vector)
 

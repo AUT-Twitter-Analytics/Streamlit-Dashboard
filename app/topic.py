@@ -17,12 +17,12 @@ def topic_run(data, lang):
     X = clean_data.text.apply(lambda x: np.str_(x))
 
     # vectorize data
-    address = "./vectorizer/topic/tfidf_fa.sav"
+    address = "app/vectorizer/topic/tfidf_fa.sav"
     loaded_vectorizer = pickle.load(open(address, "rb"))
     X_vector = loaded_vectorizer.transform(X)
 
     # rf model
-    address = "./models/topic/random_forest/rf_fa.sav"
+    address = "app/models/topic/random_forest/rf_fa.sav"
     loaded_rf_model = pickle.load(open(address, "rb"))
     prediction = loaded_rf_model.predict(X_vector)
 
