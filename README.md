@@ -1,10 +1,15 @@
-# AUT Twitter Dashboard
+# AUT Twitter Analytics
 
 This application is a dashboard used to analyze tweets. 🐦
 
-## Setup and Run
+- Exploratory Data Analysis
+- Sentiment Analysis
+- Topic Detection
+- Named Entity Recognition
 
-1. Clone the repo by `$ https://github.com/AUT-Twitter-Dashboard/Streamlit-Dashboard.git`
+## Installation and Usage
+
+1. Clone the repo by `$ https://github.com/AUT-Twitter-Analytics/Streamlit-Dashboard.git`
 
 2. Go to cloned directory and create a virtual environment `$ python3 -m virtualenv venv`
 
@@ -17,3 +22,8 @@ This application is a dashboard used to analyze tweets. 🐦
 6. You can now view your Streamlit app in your browser.
 
    Local URL: [http://localhost:8501](http://localhost:8501/)<br>Network URL: [http://192.168.88.17:8501](http://192.168.88.17:8501/)
+
+## Production Deployment
+
+Check out our project [here](https://share.streamlit.io/aut-twitter-analytics/streamlit-dashboard/app/app.py). Streamlit sharing lets you deploy, manage, and share your apps – all for free! If you have a Streamlit app hosted publicly on GitHub, you are now one click away from sharing it with the world.
+
