@@ -40,7 +40,7 @@ user_input = st.sidebar.text_input(f'Enter {tweet_type} and press ENTER to apply
 
 # About us
 st.sidebar.header('About')
-st.sidebar.markdown('Checkout our [GitHub](https://github.com/AUT-Twitter-Analytics).')
+st.sidebar.markdown('Check out our [GitHub](https://github.com/AUT-Twitter-Analytics).')
 
 # Load Data
 @st.cache(allow_output_mutation=True)
