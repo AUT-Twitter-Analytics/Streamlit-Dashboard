@@ -1,3 +1,4 @@
+import os
 import re
 import string
 
@@ -5,7 +6,9 @@ import hazm
 import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
+from PIL import Image
 from streamlit import caching
 from wordcloud import STOPWORDS
 from wordcloud_fa import WordCloudFa
@@ -15,8 +18,19 @@ from sentiment import sentiment_run
 from topic import topic_run
 from twitter import Twitter
 
-st.sidebar.title("AUT Twitter Dashboard")
-st.sidebar.markdown("This application is a dashboard used to analyze tweets 🐦")
+img_logo_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+logo_image = Image.open(img_logo_path)
+st.sidebar.image(logo_image, width=300)
+
+st.markdown("<h1 style='color: #22A7EC;'>AUT Twitter Analytics</h1>", unsafe_allow_html=True)
+st.markdown("This application is a dashboard used to analyze tweets 🐦")
+st.markdown("______")
+
+
+# Menu Section in Sidebar
+st.sidebar.subheader("Menu")
+analyze_type = st.sidebar.radio('Extracting Information By',('Exploratory Data Analysis', 'Sentiment Analysis', 'Topic Detection', 'Named Entity Recognition'))
+
 
 # Search Section in Sidebar
 st.sidebar.subheader("Search")
@@ -24,9 +38,9 @@ tweet_type = st.sidebar.radio('Search By', ('keywords', 'username'))
 tweet_lang = st.sidebar.radio('Tweets Language', ('FA', 'EN'))
 user_input = st.sidebar.text_input(f'Enter {tweet_type} and press ENTER to apply', key=1)
 
-# Menu Section in Sidebar
-st.sidebar.subheader("Menu")
-analyze_type = st.sidebar.radio('Extracting Information By',('Exploratory Data Analysis', 'Sentiment Analysis', 'Topic Detection', 'Named Entity Recognition'))
+# About us
+st.sidebar.header('About')
+st.sidebar.markdown('Checkout our [GitHub](https://github.com/AUT-Twitter-Analytics).')
 
 # Load Data
 @st.cache(allow_output_mutation=True)
@@ -45,24 +59,31 @@ if user_input != '':
 
     # Exploratory Data Analysis
     if analyze_type == 'Exploratory Data Analysis':
-        st.title("AUT Twitter Dashboard")
-        # Dataframe
-        st.markdown('## **Data**')
-        st.write(data)
+        st.header("Exploratory Data Analysis")
 
-        # Random Tweet
-        col1, col2 = st.beta_columns(2)
-        with col1:
-            st.markdown('')
-            st.markdown('')
-            random_tweet = st.button('Show another random tweet')
-        with col2:
-            st.markdown('')
-            st.markdown(f'{data[["text"]].sample(n=1).iat[0, 0]}')
+        # Distribution of tweets over time
+        st.subheader('**Distribution of tweets over time**')
+        def tweets_dist(data):
+            fig = go.Figure()
+
+            fig.add_trace(go.Histogram(
+            x=data['created_at'],
+            nbinsx=30
+            ))
+
+            fig.update_layout(
+            xaxis_title_text='Time',
+            yaxis_title_text='Frequency',
+            bargap=0.1,
+            bargroupgap=0.2)
+            
+            return fig
+
+        st.plotly_chart(tweets_dist(data))
 
 
         # WordCloud
-        st.markdown('## **Wordcloud**')
+        st.subheader('**Wordcloud**')
         words = ' '.join(data['text'])
         punctuations_list = '''`÷×؛<>_()*&^%][ـ،/:"؟.,'{}~¦+|!”…“–ـ''' + string.punctuation
         def remove_punctuations(text):
@@ -77,10 +98,24 @@ if user_input != '':
         image = wc.to_image()
         st.image(image)
 
+
+        # Dataframe
+        st.subheader('**Data**')
+        st.write(data)
+        # Random Tweet
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            st.markdown('')
+            st.markdown('')
+            random_tweet = st.button('Show another random tweet')
+        with col2:
+            st.markdown('')
+            st.markdown(f'{data[["text"]].sample(n=1).iat[0, 0]}')
+
             
     # Sentiment Analysis
     if analyze_type == 'Sentiment Analysis':
-        st.title('Sentiment Analysis')
+        st.header('Sentiment Analysis')
         if tweet_lang == 'FA':
             sentiment_data = sentiment_run(data, 'fa')
         elif tweet_lang == 'EN':
@@ -89,7 +124,9 @@ if user_input != '':
         sentiment_count = sentiment_data['sentiment'].value_counts()
         sentiment_count = pd.DataFrame({'Sentiment':sentiment_count.index, 'Tweets':sentiment_count.values})
         
-        st.markdown('## **Number of tweets by sentiment**')
+
+        # Number of tweets by sentiment
+        st.subheader('**Number of tweets by sentiment**')
         select = st.selectbox('Visualization type', ['Pie chart','Bar plot',], key='1')
         if select == 'Pie chart':
             fig = px.pie(sentiment_count, values='Tweets', names='Sentiment')
@@ -97,10 +134,70 @@ if user_input != '':
         else:
             fig = px.bar(sentiment_count, x='Sentiment', y='Tweets', color='Tweets', height=500)
             st.plotly_chart(fig)
+
+
+        # Distribution of sentiments over time
+        st.subheader('**Distribution of sentiments over time**')
+
+        def sentiment_dist(data):
+            grouping_freq='20min'
+            grouped_negative = data[data['sentiment'] == 'negative'].groupby(pd.Grouper(key='created_at',freq=grouping_freq)).count()
+            grouped_neutral = data[data['sentiment'] == 'neutral'].groupby(pd.Grouper(key='created_at',freq=grouping_freq)).count()
+            grouped_positive = data[data['sentiment'] == 'positive'].groupby(pd.Grouper(key='created_at',freq=grouping_freq)).count()
+            grouped_total = data.groupby(pd.Grouper(key='created_at',freq=grouping_freq)).count()
+            final_data = pd.DataFrame(data={
+                'negative': grouped_negative['sentiment'],
+                'neutral' : grouped_neutral['sentiment'],
+                'positive': grouped_positive['sentiment'],
+            },index=grouped_total.index)
+
+            final_data.reset_index(inplace=True)
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=final_data['created_at'],
+                y=final_data['neutral'],
+                name="Neutrals",
+                opacity=0.8,
+                mode='lines',
+                line=dict(width=0.5, color='rgb(131, 90, 241)'),
+                stackgroup='one' 
+            ))
+            fig.add_trace(go.Scatter(
+                x=final_data['created_at'],
+                y=final_data['negative'],
+                name="Negatives",
+                opacity=0.8,
+                mode='lines',
+                line=dict(width=0.5, color='rgb(255, 50, 50)'),
+                stackgroup='two' 
+            ))
+            fig.add_trace(go.Scatter(
+                x=final_data['created_at'],
+                y=final_data['positive'],
+                name="Positives",
+                opacity=0.8,
+                mode='lines',
+                line=dict(width=0.5, color='rgb(184, 247, 212)'),
+                stackgroup='three' 
+            ))
+            fig.update_layout(
+                xaxis_title_text='Time',
+                yaxis_title_text='Frequency'
+            )
+            fig.update_xaxes(
+                rangeslider_visible=True
+            )
+            return fig
+    
+        st.plotly_chart(sentiment_dist(sentiment_data))
         
-        st.markdown('## **Data**')
+
+        # Dataframe
+        st.subheader('**Data**')
         st.write(sentiment_data)
-        
+
+        # Random Tweet
         col1, col2 = st.beta_columns(2)
         with col1:
             st.markdown('')
@@ -115,7 +212,7 @@ if user_input != '':
 
     # Topic Detection
     if analyze_type == 'Topic Detection':
-        st.title('Topic Detection:')
+        st.header('Topic Detection:')
         if tweet_lang == 'FA':
             topic_data = topic_run(data, 'fa')
         elif tweet_lang == 'EN':
@@ -124,7 +221,7 @@ if user_input != '':
         topic_count = topic_data['topic'].value_counts()
         topic_count = pd.DataFrame({'Topic':topic_count.index, 'Tweets':topic_count.values})
 
-        st.markdown('## **Number of tweets by topic**')
+        st.subheader('**Number of tweets by topic**')
         select = st.selectbox('Visualization type', ['Pie chart','Bar plot',], key='2')
         if select == 'Pie chart':        
             fig = px.pie(topic_count, values='Tweets', names='Topic')
@@ -133,7 +230,7 @@ if user_input != '':
             fig = px.bar(topic_count, x='Topic', y='Tweets', color='Tweets', height=500)
             st.plotly_chart(fig)
 
-        st.markdown('## **Data**')
+        st.subheader('**Data**')
         st.write(topic_data)
         
 
@@ -147,3 +244,4 @@ if user_input != '':
             st.markdown('')
             st.markdown(f'**Text:**    {tmp.iat[0, 0]}')
             st.markdown(f'**Topic:**    {tmp.iat[0, 1]}')
+
