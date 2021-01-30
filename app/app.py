@@ -192,6 +192,23 @@ if user_input != '':
     
         st.plotly_chart(sentiment_dist(sentiment_data))
         
+        # WordCloud by sentiment
+        st.subheader('**WordCloud by sentiment**')
+        word_sentiment = st.radio('Display word cloud for what sentiment?', ('positive', 'neutral', 'negative'))
+        df = sentiment_data[sentiment_data['sentiment']==word_sentiment]
+        words = ' '.join(df['text'])
+        punctuations_list = '''`÷×؛<>_()*&^%][ـ،/:"؟.,'{}~¦+|!”…“–ـ''' + string.punctuation
+        def remove_punctuations(text):
+            translator = str.maketrans('', '', punctuations_list)
+            return text.translate(translator)
+        words = remove_punctuations(words)
+        words = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))', '', words, flags=re.MULTILINE)
+        words = re.sub(r"@(\w+)", ' ', words, flags=re.MULTILINE)
+        wordcloud = WordCloudFa(persian_normalize=True, stopwords=list(STOPWORDS)+hazm.stopwords_list(), include_numbers=False, background_color='white', width=700, height=500)
+        frequencies = wordcloud.process_text(words)
+        wc = wordcloud.generate_from_frequencies(frequencies)
+        image = wc.to_image()
+        st.image(image)
 
         # Dataframe
         st.subheader('**Data**')
