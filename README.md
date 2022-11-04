@@ -1,4 +1,4 @@
-# AUT Twitter Analytics
+# Twitter Analytics Dashboard
 
 This application is a dashboard used to analyze tweets. 🐦
 
