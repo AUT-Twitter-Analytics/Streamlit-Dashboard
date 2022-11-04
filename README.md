@@ -1,6 +1,6 @@
 # Twitter Analytics Dashboard
 
-This application is a dashboard used to analyze tweets. 🐦
+This project was an interactive dashboard based on user feedback on the product based on about 3.5 GB of Twitter data in Persian and English. 🐦
 
 - Exploratory Data Analysis
 - Sentiment Analysis
